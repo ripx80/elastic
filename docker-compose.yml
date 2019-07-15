@@ -1,0 +1,36 @@
+version: '2.2'
+services:
+  elasticsearch:
+    build:
+      context: elasticsearch/
+      args:
+        ES_VERSION: $ES_VERSION
+    volumes:
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+      #- ./data:/usr/share/elasticsearch/data #persistend data
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      ES_JAVA_OPTS: "-Xmx512m -Xms512m"
+      ELASTIC_PASSWORD: changeme
+    networks:
+      - esnet
+
+  kibana:
+    build:
+      context: kibana/
+      args:
+        ES_VERSION: $ES_VERSION
+    volumes:
+      - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+    ports:
+      - "5601:5601"
+    networks:
+      - esnet
+    depends_on:
+      - elasticsearch
+
+networks:
+  esnet:
+    driver: bridge
