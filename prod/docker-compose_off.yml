@@ -1,0 +1,55 @@
+version: '2.2'
+services:
+  es01:
+    build:
+      context: elasticsearch/
+      args:
+        ES_VERSION: $ES_VERSION
+    container_name: es01
+    environment:
+      - node.name=es01
+      - discovery.seed_hosts=es02
+      - cluster.initial_master_nodes=es01,es02
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data/es01:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      - esnet
+  es02:
+    build:
+      context: elasticsearch/
+      args:
+        ES_VERSION: $ES_VERSION
+    container_name: es02
+    environment:
+      - node.name=es02
+      - discovery.seed_hosts=es01
+      - cluster.initial_master_nodes=es01,es02
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data/es02:/usr/share/elasticsearch/data
+    networks:
+      - esnet
+
+volumes:
+  es01:
+    driver: local
+  es02:
+    driver: local
+
+networks:
+  esnet:
