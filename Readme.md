@@ -1,4 +1,8 @@
-# Elastic with Kibana
+# Elastic
+
+This is only a dev repo for various scripts and tests. Nothing for prod.
+
+## Elastic with Kibana
 
 Start the dev environment:
 
@@ -32,6 +36,44 @@ Login with elastic user and your new password. Change the permissions of kibana 
 
 ```bash
 sysctl -w vm.max_map_count=262144
+```
+
+## Elastic in Dev and TLS
+
+This setup will create a three node cluster. Default it will be in production mode. But if you will test it and try things out its recommendet to switch to dev mode.
+All stdout logs will be shipped via fluent-bit to elastic.
+**Before you start the es cluster start the fluent-bit prod node under fluentd**
+You become some errors on the beginning from fluent-bit but they are buffed and send if elastic is up and running.
+
+### Dev
+
+In development mode you can inspect the cluster.
+Security features are disabled for simplicity. If you need a login page or tls between instances use the production mode.
+
+```sh
+docker-compose -f docker-compose-dev.yml -e .env-dev -d
+```
+
+### Production TLS
+
+- [tls guide](https://www.elastic.co/guide/en/elastic-stack-get-started/current/get-started-docker.html#get-started-docker-tls)
+- [production settings](https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#next-getting-started-tls-docker)
+
+In production mode you must set the security feature and have ssl certs.
+Its recommended by elastic to use the conf files in prod mode but you can overwrite it via env vars
+
+For the initinal setup you must do the following (saved in volumes).
+
+```sh
+docker-compose -f create-certs.yml run --rm create_certs
+docker-compose up -d
+docker exec es01 /bin/bash -c "bin/elasticsearch-setup-passwords \
+auto --batch --url https://es01:9200"
+# change the pw of kibana_system in docker-compose file and save the passwords
+# change the elastic uer password in fluent-bit.conf
+# then restart the env
+docker-compose stop
+docker-compose up -d
 ```
 
 ### Info
@@ -102,3 +144,34 @@ POST test-service/_bulk
 { "create": {}}
 { "text": "Some log message", "@timestamp": "2016-07-05T01:00:00Z" }
 ```
+
+## Troubleshooting
+
+### Grafana can not connect to es
+
+if you have enable the prod env with tls enabled then you must add the cacert to the grafana and enable the with CA Cert option.
+configure the elastic user and the right password. Look into the grafana container logs if something went wrong.
+Check if the certificate is assigned to the host or the ip address you are using
+
+## old
+
+Start the dev environment:
+
+```bash
+ES_VERSION=7.2.0 docker-compose up
+curl --user elastic:changeme  http://127.0.0.1:9200/_cat/health
+```
+
+Now set random generated passwords for all accounts
+
+```bash
+docker-compose exec -T elasticsearch bin/elasticsearch-setup-passwords auto --batch
+```
+
+Change the password in kibana.yml file and restart the service:
+
+```bash
+docker-compose restart kibana
+```
+
+Login with elastic user and your new password. Change the permissions of kibana user and relogin with this user.

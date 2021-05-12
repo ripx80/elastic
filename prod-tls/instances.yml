@@ -1,0 +1,30 @@
+instances:
+  - name: es01
+    dns:
+      - es01
+      - localhost
+    ip:
+      - 127.0.0.1
+      - 192.168.100.10
+
+  - name: es02
+    dns:
+      - es02
+      - localhost
+    ip:
+      - 127.0.0.1
+      - 192.168.100.10
+
+  - name: es03
+    dns:
+      - es03
+      - localhost
+    ip:
+      - 127.0.0.1
+      - 192.168.100.10
+
+  - name: 'kib01'
+    dns:
+      - kib01
+      - localhost
+      - 192.168.100.10
