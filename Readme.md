@@ -88,7 +88,7 @@ POST inactive-logs-1/_forcemerge?max_num_segments=1
 ### 4. set max docs to 5 and push logs
 
 ```text
-POST syborg-service/_bulk
+POST test-service/_bulk
 { "create": {}}
 { "text": "Some log message", "@timestamp": "2016-07-01T01:00:00Z" }
 { "create": {}}
